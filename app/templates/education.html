@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -21,8 +18,6 @@
     <link rel='icon' href='./static/img/favicon.ico' type='image/x-icon' />
     <title>{{ title }}</title>
 </head>
-
-
 
 <body>
     <header class="nav-bar">
@@ -43,20 +38,15 @@
     </div>
 
     <div>
-        <h2>Hobbies</h2>
+        <h2>Education</h2>
         <ul style="color:black" id="hobbies">
-            {% for item in hobbies %}
+            {% for item in education %}
             <li>
-                <p>{{ item.name }}</p>
-                <div>
-                    <img src="./static/img/{{item.img_code}}.jpg" width="50%" />
-                </div>
+                <p>{{ item }}</p>
             </li>
             {% endfor %}
         </ul>
     </div>
 </body>
-
-</html>
 
 </html>
