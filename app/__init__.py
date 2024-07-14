@@ -100,3 +100,6 @@ def hobbies():
                            hobbies=user.hobbies,
                            url=os.getenv("URL"))
 
+@app.route('/timeline')
+def timeline():
+    return render_template('timeline.html', title="Timeline")

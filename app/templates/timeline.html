@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta property="og:title" content="Personal Portfolio">
+        <meta property="og:description" content="My Personal Portfolio">
+        <meta property="og:url" content="{{ url }}">
+    
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+            rel="stylesheet">
+    
+        <link lang='sass' rel="stylesheet" href="./static/styles/main.css">
+        <link rel='icon' href='./static/img/favicon.ico' type='image/x-icon' />
+        <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-form {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .post-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .post-form input[type="text"],
+        .post-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .post-form button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .post-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .timeline-posts {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .timeline-post {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .timeline-post h3 {
+            margin-bottom: 5px;
+        }
+
+        .timeline-post small {
+            color: #888;
+        }
+
+        hr {
+            margin: 10px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="nav-bar">
+        <div class="nav-content">
+            <a href="/">
+                <div class="nav-logo">
+                    <img src="./static/img/logo.svg" />
+                </div>
+            </a>
+        </div>
+    </header>
+
+    <div class="profile">
+        <div id="profile-picture" class="profile-picture">
+            <img src="./static/img/image.jpg">
+        </div>
+        <h1>{{ title }}</h1>
+    </div>
+
+    <div class="container">
+        <!-- Form to create a new timeline post -->
+        <div class="post-form">
+            <h2>Create New Post</h2>
+            <form id="postForm">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required><br><br>
+
+                <label for="content">Content:</label><br>
+                <textarea id="content" name="content" rows="4" required></textarea><br><br>
+
+                <button type="submit">Post</button>
+            </form>
+        </div>
+
+        <!-- Display existing timeline posts -->
+        <div class="timeline-posts" id="timelinePosts">
+            <h2>Timeline Posts</h2>
+            <!-- Posts will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        const postForm = document.getElementById('postForm');
+        const timelinePostsDiv = document.getElementById('timelinePosts');
+
+        postForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(postForm);
+            const postData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                content: formData.get('content')
+            };
+
+            try {
+                const response = await fetch('/api/timeline_post', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create timeline post');
+                }
+
+                const newPost = await response.json();
+                displayNewPost(newPost);
+                postForm.reset(); // Clear form fields after successful submission
+            } catch (error) {
+                console.error('Error creating timeline post:', error);
+            }
+        });
+
+        async function displayPosts() {
+            try {
+                const response = await fetch('/api/timeline_post');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch timeline posts');
+                }
+
+                const posts = await response.json();
+                posts.reverse(); // Display newest posts first
+
+                posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('timeline-post');
+                    postElement.innerHTML = `
+                        <h3>${post.name} (${post.email})</h3>
+                        <p>${post.content}</p>
+                        <small>${new Date(post.created_at).toLocaleString()}</small>
+                        <hr>
+                    `;
+                    timelinePostsDiv.appendChild(postElement);
+                });
+            } catch (error) {
+                console.error('Error fetching timeline posts:', error);
+            }
+        }
+
+        function displayNewPost(post) {
+            const postElement = document.createElement('div');
+            postElement.classList.add('timeline-post');
+            postElement.innerHTML = `
+                <h3>${post.name} (${post.email})</h3>
+                <p>${post.content}</p>
+                <small>${new Date(post.created_at).toLocaleString()}</small>
+                <hr>
+            `;
+            timelinePostsDiv.prepend(postElement); // Prepend to show newest posts first
+        }
+
+        displayPosts(); // Display existing posts on page load
+    </script>
+</body>
+
+</html>
