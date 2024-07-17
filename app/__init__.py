@@ -11,13 +11,17 @@ from playhouse.shortcuts import model_to_dict
 
 load_dotenv()
 app = Flask(__name__)
-mydb = MySQLDatabase(
-    os.getenv("MYSQL_DATABASE"),
-    user=os.getenv("MYSQL_USER"),
-    password=os.getenv("MYSQL_PASSWORD"),
-    host=os.getenv("MYSQL_HOST"),
-    port=3306
-)
+
+if os.getenv("TESTING")=="true":
+    mydb=SqliteDatabase('file:memory?mode=memory&cache=shared', uri=True)
+else:   
+    mydb = MySQLDatabase(
+        os.getenv("MYSQL_DATABASE"),
+        user=os.getenv("MYSQL_USER"),
+        password=os.getenv("MYSQL_PASSWORD"),
+        host=os.getenv("MYSQL_HOST"),
+        port=3306
+    )
 
 print(mydb)
 
@@ -44,6 +48,14 @@ def post_time_line_post():
     name=data.get('name')
     email=data.get('email')
     content=data.get('content')
+
+    if not name:
+        return jsonify(error="Invalid name"), 400
+    if not content:
+        return jsonify(error="Invalid content"), 400
+    if '@' not in email:
+        return jsonify(error="Invalid email"), 400
+
     timeline_post=TimelinePost.create(name=name, email=email, content=content)
 
     return model_to_dict(timeline_post)
