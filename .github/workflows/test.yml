@@ -27,10 +27,10 @@ jobs:
       
       - name: Install Dependencies
         run: |
-          source python3-virtualenv/bin/activate
+          source venv/bin/activate
           pip install -r requirements.txt
       
       - name: Run Tests
         run: |
-          source python3-virtualenv/bin/activate
+          source venv/bin/activate
           ./run_test.sh
