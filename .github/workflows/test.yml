@@ -23,7 +23,7 @@ jobs:
           python-version: '3.12'
       
       - name: Setup Python Virtual Environment
-        run: python3 -m venv python3-virtualenv
+        run: python3 -m venv venv
       
       - name: Install Dependencies
         run: |
