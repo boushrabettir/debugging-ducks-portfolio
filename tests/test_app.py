@@ -17,35 +17,61 @@ class AppTestCase(unittest.TestCase):
         assert not "no text" in html
 
     def test_timeline(self):
-        response=self.client.get("/api/timeline_post")
-        assert response.status_code==200
+        response = self.client.get('/api/timeline_post')
+        assert response.status_code == 200
         assert response.is_json
-        json=response.get_json()
+        json = response.get_json()
         assert "timeline_posts" in json
         assert len(json["timeline_posts"]) == 0
 
+        response = self.client.post("/api/timeline_post", data={
+            "name": "John Doe",
+            "email": "john@example.com",
+            "content": "Hello world, I'm John!"
+        })
+        assert response.status_code == 200
+        assert response.is_json
+        json = response.get_json()
+        assert json["name"] == "John Doe"
+        assert json["email"] == "john@example.com"
+        assert json["content"] == "Hello world, I'm John!"
+        assert json["id"] == 1
+
+        response = self.client.get('/api/timeline_post')
+        assert response.status_code == 200
+        assert response.is_json
+        json = response.get_json()
+        assert "timeline_posts" in json
+        assert len(json["timeline_posts"]) == 1
+        assert json["timeline_posts"][0]["name"] == "John Doe"
+        assert json["timeline_posts"][0]["email"] == "john@example.com"
+        assert json["timeline_posts"][0]["content"] == "Hello world, I'm John!"
+        assert json["timeline_posts"][0]["id"] == 1
+
     def test_malformed_timeline_post(self):
-        response=self.client.post("/api/timeline_post", data={
-            "email": "john@example.com", "content": "Hello!"
+        response = self.client.post("/api/timeline_post", data={
+            "email": "john@example.com",
+            "content": "Hello world, I'm John!"
         })
+        assert response.status_code == 400
+        d = response.get_json()
+        html = response.get_data(as_text=True)
+        assert "Invalid name" in html
 
-        assert response.status_code==400
-        html=json.loads(response.get_data(as_text=True))
-        assert html['error']=='Invalid'
-
-        response=self.client.post("/api/timeline_post", data={
-            "name": "John Doe", "email": "john@example.com", "content": ""
+        response = self.client.post("/api/timeline_post", data={
+            "name": "John Doe",
+            "email": "not-an-email",
+            "content": "Hello world, I'm John!"
         })
-
-        print(f"Response {response}")
-        assert response.status_code==400
-        html=json.loads(response.get_data(as_text=True))
-        assert html['error']=='Invalid'
-
-
-        response=self.client.post("/api/timeline_post", data={
-            "name": "John Doe", "email": "notanemail", "content": "Hi!"
+        assert response.status_code == 400
+        html = response.get_data(as_text=True)
+        assert "Invalid email" in html
+        
+        response = self.client.post("/api/timeline_post", data={
+            "name": "John Doe",
+            "email": "john@example.com",
+            "content": ""
         })
-        assert response.status_code==400
-        html=json.loads(response.get_data(as_text=True))
-        assert html['error']=='Invalid'
+        assert response.status_code == 400
+        html = response.get_data(as_text=True)
+        assert "Invalid content" in html
